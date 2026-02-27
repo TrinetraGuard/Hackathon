@@ -1,24 +1,25 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { UserLayout } from "@/components/layouts/UserLayout";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
 import { AdminLayout } from "@/components/layouts/AdminLayout";
-import ErrorPage from "@/pages/error/error_page";
-import HomePage from "@/pages/home/page/home_page";
-import LoginPage from "@/pages/auth/LoginPage";
-import RegisterPage from "@/pages/auth/RegisterPage";
-import UserDashboardPage from "@/pages/user/UserDashboardPage";
-import PlacesPage from "@/pages/user/PlacesPage";
-import EssentialsPage from "@/pages/user/EssentialsPage";
-import PlanPage from "@/pages/user/PlanPage";
-import MorePage from "@/pages/user/MorePage";
-import FamilyConnectPage from "@/pages/user/FamilyConnectPage";
-import ItineraryDetailPage from "@/pages/user/ItineraryDetailPage";
-import AdminOverviewPage from "@/pages/admin/AdminOverviewPage";
-import AdminPlacesPage from "@/pages/admin/AdminPlacesPage";
+import { UserLayout } from "@/components/layouts/UserLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AdminAddPlacePage from "@/pages/admin/AdminAddPlacePage";
 import AdminFeatureImagesPage from "@/pages/admin/AdminFeatureImagesPage";
+import AdminOverviewPage from "@/pages/admin/AdminOverviewPage";
+import AdminPlacesPage from "@/pages/admin/AdminPlacesPage";
 import AdminUserLocationsPage from "@/pages/admin/AdminUserLocationsPage";
+import LoginPage from "@/pages/auth/LoginPage";
+import RegisterPage from "@/pages/auth/RegisterPage";
+import ErrorPage from "@/pages/error/error_page";
+import HomePage from "@/pages/home/page/home_page";
+import EssentialsPage from "@/pages/user/EssentialsPage";
+import FamilyConnectPage from "@/pages/user/FamilyConnectPage";
+import ItineraryDetailPage from "@/pages/user/ItineraryDetailPage";
+import MorePage from "@/pages/user/MorePage";
+import PlacesPage from "@/pages/user/PlacesPage";
+import PlanPage from "@/pages/user/PlanPage";
+import UserDashboardPage from "@/pages/user/UserDashboardPage";
 
 function AppRoutes() {
   const { user, loading } = useAuth();

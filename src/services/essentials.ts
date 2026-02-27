@@ -1,17 +1,18 @@
 import {
-  collection,
-  doc,
-  getDocs,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    orderBy,
+    query,
+    updateDoc,
 } from "firebase/firestore";
+
 import { getFirestore } from "@/config/firebase";
-import { COLLECTIONS } from "@/types";
 import type { Essential } from "@/types";
+import { COLLECTIONS } from "@/types";
 
 const db = getFirestore();
 

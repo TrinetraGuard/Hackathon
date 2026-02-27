@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
-import { getPlaces, deletePlace } from "@/services/places";
+import { deletePlace, getPlaces } from "@/services/places";
+import type { Category, Place } from "@/types";
+import { useEffect, useMemo, useState } from "react";
+
 import { getCategories } from "@/services/categories";
-import type { Place, Category } from "@/types";
+import { Link } from "react-router-dom";
 
 export default function AdminPlacesPage() {
   const [places, setPlaces] = useState<Place[]>([]);

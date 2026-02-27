@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-import { getPlaces } from "@/services/places";
 import { getCategories } from "@/services/categories";
-import { getUserLocation, distanceKm, formatDistance, type UserCoords } from "@/utils/geolocation";
-import type { Place, Category } from "@/types";
+import { getPlaces } from "@/services/places";
+import type { Category, Place } from "@/types";
+import { distanceKm, formatDistance, getUserLocation, type UserCoords } from "@/utils/geolocation";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 export default function PlacesPage() {
   const [searchParams] = useSearchParams();

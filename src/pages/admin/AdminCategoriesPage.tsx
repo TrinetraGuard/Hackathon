@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
-  getCategories,
   createCategory,
-  updateCategory,
   deleteCategory,
+  getCategories,
+  updateCategory,
 } from "@/services/categories";
+
 import type { Category } from "@/types";
 
 export default function AdminCategoriesPage() {

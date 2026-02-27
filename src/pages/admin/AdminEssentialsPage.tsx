@@ -1,10 +1,11 @@
-import { useEffect, useState, useMemo } from "react";
 import {
-  getEssentials,
-  createEssential,
-  updateEssential,
-  deleteEssential,
+    createEssential,
+    deleteEssential,
+    getEssentials,
+    updateEssential,
 } from "@/services/essentials";
+import { useEffect, useMemo, useState } from "react";
+
 import { DEFAULT_ESSENTIAL_CATEGORIES } from "@/services/googlePlaces";
 import type { Essential } from "@/types";
 

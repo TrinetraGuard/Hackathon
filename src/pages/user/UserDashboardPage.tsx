@@ -1,21 +1,21 @@
-import { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { getPopularPlaces, getPlaces } from "@/services/places";
-import { getEssentials } from "@/services/essentials";
 import { getCategories } from "@/services/categories";
+import { getEssentials } from "@/services/essentials";
 import {
-  getUserSelectedEssentials,
-  setUserSelectedEssentials,
-} from "@/services/userEssentials";
-import {
-  fetchNearbyPlaces,
-  DEFAULT_ESSENTIAL_CATEGORIES,
-  type GooglePlaceResult,
+    DEFAULT_ESSENTIAL_CATEGORIES,
+    fetchNearbyPlaces,
+    type GooglePlaceResult,
 } from "@/services/googlePlaces";
-import { getUserLocation, watchUserLocation, distanceKm, formatDistance, getMapsDirectionsUrl, type UserCoords } from "@/utils/geolocation";
+import { getPlaces, getPopularPlaces } from "@/services/places";
+import {
+    getUserSelectedEssentials,
+    setUserSelectedEssentials,
+} from "@/services/userEssentials";
 import { setUserLocation } from "@/services/userLocation";
-import type { Place, Essential, Category } from "@/types";
+import type { Category, Essential, Place } from "@/types";
+import { distanceKm, formatDistance, getMapsDirectionsUrl, getUserLocation, watchUserLocation, type UserCoords } from "@/utils/geolocation";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 const ESSENTIAL_CATEGORY_ICONS: Record<string, string> = {
   Medical: "🏥",

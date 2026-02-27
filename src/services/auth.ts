@@ -1,13 +1,13 @@
+import { getAuth, getFirestore } from "@/config/firebase";
+import type { AppUser, UserRole } from "@/types";
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
   type User as FirebaseUser,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { getAuth, getFirestore } from "@/config/firebase";
-import type { AppUser, UserRole } from "@/types";
 
 const ADMIN_EMAIL = "admin@trinetra.site";
 

@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
 import { getEssentials } from "@/services/essentials";
-import { getPlaces } from "@/services/places";
 import {
-  fetchNearbyPlaces,
-  DEFAULT_ESSENTIAL_CATEGORIES,
-  type GooglePlaceResult,
+    DEFAULT_ESSENTIAL_CATEGORIES,
+    fetchNearbyPlaces,
+    type GooglePlaceResult,
 } from "@/services/googlePlaces";
-import { getUserLocation, distanceKm, formatDistance, getMapsDirectionsUrl, type UserCoords } from "@/utils/geolocation";
+import { getPlaces } from "@/services/places";
 import type { Essential, Place } from "@/types";
+import { distanceKm, formatDistance, getMapsDirectionsUrl, getUserLocation, type UserCoords } from "@/utils/geolocation";
+import { useEffect, useState } from "react";
 
 const ESSENTIAL_CATEGORY_ICONS: Record<string, string> = {
   Medical: "🏥",

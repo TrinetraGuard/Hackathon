@@ -1,19 +1,20 @@
-import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { loadGoogleMapsScript } from "@/services/googlePlaces";
 import {
   createFamilyCircle,
+  getFamilyCircleForUser,
   joinFamilyCircle,
   leaveFamilyCircle,
-  getFamilyCircleForUser,
   subscribeToFamilyCircle,
 } from "@/services/familyCircle";
-import { setUserLocation, subscribeToUserLocation } from "@/services/userLocation";
-import { getAppUsersByIds } from "@/services/auth";
-import { watchUserLocation } from "@/utils/geolocation";
 import { distanceKm, formatDistance } from "@/utils/geolocation";
+import { setUserLocation, subscribeToUserLocation } from "@/services/userLocation";
+import { useEffect, useRef, useState } from "react";
+
 import type { FamilyCircle } from "@/types";
 import type { UserLocationDoc } from "@/types";
+import { getAppUsersByIds } from "@/services/auth";
+import { loadGoogleMapsScript } from "@/services/googlePlaces";
+import { useAuth } from "@/contexts/AuthContext";
+import { watchUserLocation } from "@/utils/geolocation";
 
 const DEFAULT_MAP = { lat: 25.4358, lng: 81.8463 };
 const DEFAULT_ZOOM = 12;

@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+
 import { BottomNav } from "@/components/BottomNav";
+import { useAuth } from "@/contexts/AuthContext";
 
 const desktopNavItems = [
   { to: "/dashboard", label: "Home" },

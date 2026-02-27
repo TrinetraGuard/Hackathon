@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import type { Category, Place } from "@/types";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { getPlaces, createPlace, updatePlace, getPlaceById } from "@/services/places";
+import { createPlace, getPlaceById, getPlaces, updatePlace } from "@/services/places";
+import { useEffect, useState } from "react";
+
 import { getCategories } from "@/services/categories";
-import type { Place, Category } from "@/types";
 
 const emptyForm = {
   name: "",

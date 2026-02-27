@@ -1,6 +1,7 @@
 import { collection, getDocs } from "firebase/firestore";
-import { getFirestore } from "@/config/firebase";
+
 import { COLLECTIONS } from "@/types";
+import { getFirestore } from "@/config/firebase";
 
 const db = getFirestore();
 
