@@ -38,6 +38,7 @@ export default function FamilyConnectPage() {
   const [memberLocations, setMemberLocations] = useState<Record<string, UserLocationDoc | null>>({});
   const [memberNames, setMemberNames] = useState<Record<string, string>>({});
   const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   // Load user's circle on mount
   useEffect(() => {
@@ -92,15 +93,31 @@ export default function FamilyConnectPage() {
     return () => unsubs.forEach((u) => u());
   }, [circle?.memberIds]);
 
-  // Load map
+  // Load map only when we're in a circle (map container is in the DOM)
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!circle) {
+      mapInstanceRef.current = null;
+      markersRef.current = [];
+      setMapReady(false);
+      setMapError(null);
+      return;
+    }
+    setMapError(null);
     const apiKey = (import.meta.env.VITE_GOOGLE_PLACES_API_KEY as string)?.trim();
-    if (!apiKey) return;
+    if (!apiKey) {
+      setMapError("Add VITE_GOOGLE_PLACES_API_KEY to .env and enable Maps JavaScript API in Google Cloud.");
+      return;
+    }
+    // Wait for ref to be attached (map div is rendered when circle is set)
+    const el = mapRef.current;
+    if (!el) return;
     loadGoogleMapsScript()
       .then(() => {
         const g = window.google;
-        if (!mapRef.current || !g?.maps) return;
+        if (!mapRef.current || !g?.maps) {
+          setMapError("Failed to load map.");
+          return;
+        }
         const map = new g.maps.Map(mapRef.current, {
           center: DEFAULT_MAP,
           zoom: DEFAULT_ZOOM,
@@ -110,9 +127,12 @@ export default function FamilyConnectPage() {
         });
         mapInstanceRef.current = map;
         setMapReady(true);
+        setMapError(null);
       })
-      .catch(() => {});
-  }, []);
+      .catch((err) => {
+        setMapError(err instanceof Error ? err.message : "Failed to load map. Check your API key and enable Maps JavaScript API.");
+      });
+  }, [circle]);
 
   // Update map markers: current user + all members
   useEffect(() => {
@@ -225,8 +245,23 @@ export default function FamilyConnectPage() {
   const copyCode = () => {
     if (!circle?.code) return;
     navigator.clipboard.writeText(circle.code);
-    // Could show a toast
   };
+
+  function formatLastSeen(updatedAt: string): string {
+    try {
+      const d = new Date(updatedAt);
+      const sec = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (sec < 15) return "Just now";
+      if (sec < 60) return `${sec}s ago`;
+      const min = Math.floor(sec / 60);
+      if (min < 60) return `${min}m ago`;
+      const hr = Math.floor(min / 60);
+      if (hr < 24) return `${hr}h ago`;
+      return d.toLocaleDateString();
+    } catch {
+      return "";
+    }
+  }
 
   if (initialLoad) {
     return (
@@ -329,30 +364,46 @@ export default function FamilyConnectPage() {
         </button>
       </div>
 
-      {/* Map */}
+      {/* Map – real-time family locations */}
       <div className="card border border-slate-200 p-0 overflow-hidden">
-        <div className="relative h-[320px] sm:h-[400px] bg-slate-200">
-          <div className="absolute inset-0" ref={mapRef} />
-          {!mapReady && (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+        <div className="px-4 py-2 border-b border-slate-100 bg-slate-50/50">
+          <h2 className="font-semibold text-slate-900 text-sm">Live map</h2>
+          <p className="text-slate-500 text-xs mt-0.5">Your location and family members update in real time.</p>
+        </div>
+        <div className="relative h-[320px] sm:h-[420px] bg-slate-200">
+          <div className="absolute inset-0 w-full h-full" ref={mapRef} />
+          {mapError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-amber-50/95 p-4 text-center">
+              <p className="text-amber-800 text-sm font-medium">Map unavailable</p>
+              <p className="text-amber-700 text-xs max-w-md">{mapError}</p>
+            </div>
+          )}
+          {!mapReady && !mapError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-100">
               <div className="w-10 h-10 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-slate-600 text-sm">Loading map…</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Members and distances */}
+      {/* Members and distances – last active location in real time */}
       <div className="card border border-slate-200">
-        <h2 className="font-semibold text-slate-900 mb-3">Family members ({circle.memberIds.length})</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold text-slate-900">Family members ({circle.memberIds.length})</h2>
+          <span className="text-xs text-slate-500">Updates in real time</span>
+        </div>
         <ul className="space-y-3">
           {circle.memberIds.map((memberId) => {
             const isMe = memberId === userId;
             const name = isMe ? "You" : (memberNames[memberId] || `Member ${memberId.slice(0, 8)}…`);
-            const loc = isMe ? (userCoords ? { latitude: userCoords.lat, longitude: userCoords.lng } : null) : memberLocations[memberId];
+            const loc = isMe ? (userCoords ? { latitude: userCoords.lat, longitude: userCoords.lng, updatedAt: new Date().toISOString() } : null) : memberLocations[memberId];
+            const hasLocation = loc?.latitude != null && loc?.longitude != null;
             const distance =
-              currentLatLng && loc?.latitude != null && loc?.longitude != null
+              currentLatLng && hasLocation && loc
                 ? distanceKm(currentLatLng, { lat: loc.latitude, lng: loc.longitude })
                 : null;
+            const lastSeen = loc?.updatedAt ? formatLastSeen(loc.updatedAt) : "";
 
             return (
               <li
@@ -364,10 +415,24 @@ export default function FamilyConnectPage() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-slate-900">{name}</p>
-                  {distance != null ? (
-                    <p className="text-slate-600 text-sm">{formatDistance(distance)} away</p>
+                  {hasLocation ? (
+                    <>
+                      {distance != null && (
+                        <p className="text-slate-600 text-sm">{formatDistance(distance)} away</p>
+                      )}
+                      {lastSeen && (
+                        <p className="text-slate-500 text-xs mt-0.5">
+                          {isMe ? "Sharing your location" : `Last active ${lastSeen}`}
+                        </p>
+                      )}
+                    </>
                   ) : (
-                    <p className="text-slate-500 text-sm">{isMe ? "Your location" : "Location not shared yet"}</p>
+                    <p className="text-slate-500 text-sm">
+                      {isMe ? "Getting your location…" : "Location not shared yet"}
+                    </p>
+                  )}
+                  {!hasLocation && !isMe && (
+                    <p className="text-slate-400 text-xs mt-0.5">They need to open the app while in this family circle.</p>
                   )}
                 </div>
               </li>

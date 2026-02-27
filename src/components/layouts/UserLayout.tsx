@@ -1,7 +1,11 @@
+import { useEffect } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
+import { getFamilyCircleForUser } from "@/services/familyCircle";
+import { setUserLocation } from "@/services/userLocation";
+import { getUserLocation, watchUserLocation } from "@/utils/geolocation";
 
 const desktopNavItems = [
   { to: "/dashboard", label: "Home" },
@@ -9,11 +13,36 @@ const desktopNavItems = [
   { to: "/essentials", label: "Essentials" },
   { to: "/plan", label: "Plan" },
   { to: "/family-connect", label: "Family" },
+  { to: "/assistant", label: "Assistant" },
+  { to: "/lost-found", label: "Lost & Found" },
   { to: "/more", label: "More" },
 ];
 
 export function UserLayout() {
   const { user } = useAuth();
+  const userId = user?.uid ?? "";
+
+  // Share location in real time when user is in a family circle (so other members see it on any page)
+  useEffect(() => {
+    if (!userId) return;
+    let stopWatching: (() => void) | null = null;
+    getFamilyCircleForUser(userId)
+      .then((circle) => {
+        if (!circle) return;
+        // Write initial location so family sees something immediately
+        getUserLocation().then((coords) => {
+          if (coords) setUserLocation(userId, coords.lat, coords.lng).catch(() => {});
+        });
+        // Keep updating location in real time
+        stopWatching = watchUserLocation((coords) => {
+          setUserLocation(userId, coords.lat, coords.lng).catch(() => {});
+        });
+      })
+      .catch(() => {});
+    return () => {
+      if (stopWatching) stopWatching();
+    };
+  }, [userId]);
 
   return (
     <div className="min-h-[100dvh] bg-slate-50 flex flex-col">

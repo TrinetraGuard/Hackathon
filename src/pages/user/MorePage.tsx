@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { getEmergencyList } from "@/services/emergency";
 import { getUserFamilyContacts, addFamilyContact, deleteFamilyContact } from "@/services/familyConnect";
 import type { EmergencyItem } from "@/types";
@@ -26,7 +26,7 @@ export default function MorePage() {
       .finally(() => setLoading(false));
   }, [userId]);
 
-  const handleAddFamily = async (e: React.FormEvent) => {
+  const handleAddFamily = async (e: FormEvent) => {
     e.preventDefault();
     if (!familyForm.name.trim() || !familyForm.phone.trim()) return;
     await addFamilyContact(userId, {
@@ -62,7 +62,25 @@ export default function MorePage() {
   return (
     <div className="pb-8">
       <h1 className="text-2xl font-bold text-slate-900 mb-1">More</h1>
-      <p className="text-slate-600 text-sm mb-6">Emergency contacts, family connect & account.</p>
+      <p className="text-slate-600 text-sm mb-6">Emergency contacts, family connect, lost & found & account.</p>
+
+      {/* Lost & Found */}
+      <section className="mb-8">
+        <h2 className="text-lg font-semibold text-slate-900 mb-3">Lost & Found</h2>
+        <Link
+          to="/lost-found"
+          className="card flex items-center justify-between group border border-slate-200 hover:border-orange-200 hover:bg-orange-50/30"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🔍</span>
+            <div>
+              <p className="font-medium text-slate-900">Report or view lost & found people</p>
+              <p className="text-slate-500 text-sm">See reports and add new ones</p>
+            </div>
+          </div>
+          <span className="text-slate-400 group-hover:text-orange-600">→</span>
+        </Link>
+      </section>
 
       {/* Emergency */}
       <section className="mb-8">

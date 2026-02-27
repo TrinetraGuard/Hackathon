@@ -7,7 +7,8 @@ const links = [
   { to: "/admin/places", label: "Manage Places", countKey: "placesCount" as const, desc: "Add and edit places" },
   { to: "/admin/places/add", label: "Add Place", desc: "Add a new place" },
   { to: "/admin/feature-images", label: "Feature images", desc: "Home page highlights" },
-  { to: "/admin/user-locations", label: "Users location", desc: "Real-time map of user locations" },
+  { to: "/admin/user-locations", label: "User locations", desc: "Real-time map of user locations" },
+  { to: "/admin/lost-found", label: "Lost & Found", countKey: "lostFoundCount" as const, desc: "View lost/found person reports" },
 ];
 
 export default function AdminOverviewPage() {
@@ -17,6 +18,7 @@ export default function AdminOverviewPage() {
     placesCount: number;
     essentialsCount: number;
     categoriesCount: number;
+    lostFoundCount: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -74,7 +76,7 @@ export default function AdminOverviewPage() {
             }`}
           >
             <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl group-hover:bg-orange-200 transition-colors">
-              {link.to.includes("places/add") ? "➕" : link.to === "/admin/places" ? "📍" : link.to.includes("feature") ? "🖼️" : "🗺️"}
+              {link.to.includes("places/add") ? "➕" : link.to === "/admin/places" ? "📍" : link.to.includes("feature") ? "🖼️" : link.to.includes("lost-found") ? "🔍" : "🗺️"}
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-slate-900 group-hover:text-orange-600 transition-colors">{link.label}</p>

@@ -3,9 +3,9 @@ import { NavLink } from "react-router-dom";
 const tabs = [
   { to: "/dashboard", label: "Home", icon: "🏠" },
   { to: "/places", label: "Places", icon: "📍" },
-  { to: "/essentials", label: "Essentials", icon: "✓" },
-  { to: "/plan", label: "Plan", icon: "📋" },
+  { to: "/assistant", label: "AI", icon: "💬" },
   { to: "/family-connect", label: "Family", icon: "👨‍👩‍👧" },
+  { to: "/lost-found", label: "Lost", icon: "🔍" },
   { to: "/more", label: "More", icon: "⋯" },
 ] as const;
 

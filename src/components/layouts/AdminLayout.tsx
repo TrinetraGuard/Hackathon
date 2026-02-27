@@ -4,11 +4,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 
 const navItems = [
-  { to: "/admin", label: "Admin Overview", end: true, icon: "📊" },
-  { to: "/admin/places", label: "Manage Places", end: true, icon: "📍" },
+  { to: "/admin", label: "Overview", end: true, icon: "📊" },
+  { to: "/admin/places", label: "Places", end: true, icon: "📍" },
   { to: "/admin/places/add", label: "Add Place", end: true, icon: "➕" },
   { to: "/admin/feature-images", label: "Feature images", end: false, icon: "🖼️" },
-  { to: "/admin/user-locations", label: "Users location", end: false, icon: "🗺️" },
+  { to: "/admin/user-locations", label: "User locations", end: false, icon: "🗺️" },
+  { to: "/admin/lost-found", label: "Lost & Found", end: true, icon: "🔍" },
 ];
 
 export function AdminLayout() {

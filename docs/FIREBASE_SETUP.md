@@ -111,6 +111,11 @@ service cloud.firestore {
       allow create: if request.auth != null;
       allow update: if request.auth != null;
     }
+    match /lostFound/{id} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && isAdmin();
+    }
   }
 }
 ```
@@ -149,3 +154,8 @@ Family Connect lets users create a **family code** and share it so others can jo
 
 - The Family Connect map uses the same **Maps JavaScript API** key as Essential Needs (`VITE_GOOGLE_PLACES_API_KEY`). Ensure that API is enabled in Google Cloud.
 - Each user's location is stored in **userLocations** and updated in real time while the app is open. Family members' locations are read from that collection.
+
+## 9. AI Assistant (Gemini) and Lost & Found
+
+- **AI Assistant**: Add `VITE_GEMINI_API_KEY` to `.env` (get a key from [Google AI Studio](https://aistudio.google.com/apikey) or enable **Generative Language API** in Google Cloud). The assistant uses Gemini for chat and can suggest nearby places; place cards show name, image, lat/lng, and an “Open in Maps” link.
+- **Lost & Found**: Reports are stored in the **lostFound** collection. The Firestore rules above allow authenticated users to read and create documents. No extra setup is required beyond the rules.

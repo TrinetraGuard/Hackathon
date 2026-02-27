@@ -25,19 +25,26 @@ export async function getCategoriesCount(): Promise<number> {
   return snap.size;
 }
 
+export async function getLostFoundCount(): Promise<number> {
+  const snap = await getDocs(collection(db, COLLECTIONS.LOST_FOUND));
+  return snap.size;
+}
+
 export interface AdminOverview {
   usersCount: number;
   placesCount: number;
   essentialsCount: number;
   categoriesCount: number;
+  lostFoundCount: number;
 }
 
 export async function getAdminOverview(): Promise<AdminOverview> {
-  const [usersCount, placesCount, essentialsCount, categoriesCount] = await Promise.all([
+  const [usersCount, placesCount, essentialsCount, categoriesCount, lostFoundCount] = await Promise.all([
     getUsersCount(),
     getPlacesCount(),
     getEssentialsCount(),
     getCategoriesCount(),
+    getLostFoundCount(),
   ]);
-  return { usersCount, placesCount, essentialsCount, categoriesCount };
+  return { usersCount, placesCount, essentialsCount, categoriesCount, lostFoundCount };
 }

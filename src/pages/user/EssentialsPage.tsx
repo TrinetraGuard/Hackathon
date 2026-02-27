@@ -8,16 +8,28 @@ import {
 import { getPlaces } from "@/services/places";
 import type { Essential, Place } from "@/types";
 import { distanceKm, formatDistance, getMapsDirectionsUrl, getUserLocation, type UserCoords } from "@/utils/geolocation";
-import { useEffect, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 
 const ESSENTIAL_CATEGORY_ICONS: Record<string, string> = {
+  All: "📋",
   Medical: "🏥",
   Hospitals: "🏥",
   Pharmacies: "💊",
   Toilets: "🚻",
+  "First Aid": "🩹",
+  Water: "💧",
+  Food: "🍽️",
+  Other: "📍",
 };
 function getCategoryIcon(cat: string): string {
   return ESSENTIAL_CATEGORY_ICONS[cat] || "📍";
+}
+
+function placeMatchesCategory(place: Place, category: string): boolean {
+  if (!category || category === "All") return Boolean(place.placeType || place.latitude != null);
+  const cat = category.trim().toLowerCase();
+  const pt = (place.placeType || "").trim().toLowerCase();
+  return pt === cat;
 }
 
 export default function EssentialsPage() {
@@ -44,27 +56,48 @@ export default function EssentialsPage() {
     getUserLocation().then((coords) => coords && setUserCoords(coords));
   }, []);
 
-  const byCategory = essentials.reduce<Record<string, Essential[]>>((acc, e) => {
-    const cat = e.category?.trim() || "Other";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(e);
+  const byCategory = useMemo(() => {
+    const acc: Record<string, Essential[]> = {};
+    essentials.forEach((e) => {
+      const cat = e.category?.trim() || "Other";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(e);
+    });
     return acc;
-  }, {});
+  }, [essentials]);
+
   const hasFirestoreEssentials = essentials.length > 0;
-  const categoryList = hasFirestoreEssentials
-    ? Object.keys(byCategory).sort()
-    : [...DEFAULT_ESSENTIAL_CATEGORIES];
+  const categoriesFromEssentials = Object.keys(byCategory);
+  const categoryList = useMemo(() => {
+    const set = new Set<string>(["All", ...DEFAULT_ESSENTIAL_CATEGORIES, ...categoriesFromEssentials]);
+    return Array.from(set).sort((a, b) => (a === "All" ? -1 : b === "All" ? 1 : a.localeCompare(b)));
+  }, [categoriesFromEssentials]);
 
-  const placesForCategory =
-    clickedCategory && places.length > 0
-      ? places.filter(
-          (p) =>
-            p.placeType &&
-            p.placeType.trim().toLowerCase() === clickedCategory.trim().toLowerCase()
-        )
-      : [];
+  const placesForCategory = useMemo(() => {
+    if (!clickedCategory || places.length === 0) return [];
+    if (clickedCategory === "All") {
+      return places
+        .filter((p) => p.latitude != null && p.longitude != null)
+        .sort((a, b) => {
+          if (!userCoords) return 0;
+          const da = distanceKm(userCoords, { lat: a.latitude!, lng: a.longitude! });
+          const db = distanceKm(userCoords, { lat: b.latitude!, lng: b.longitude! });
+          return da - db;
+        });
+    }
+    return places.filter((p) => placeMatchesCategory(p, clickedCategory));
+  }, [clickedCategory, places, userCoords]);
 
-  const showGooglePlaces = !hasFirestoreEssentials && clickedCategory;
+  const essentialsForCategory = useMemo(() => {
+    if (!clickedCategory || clickedCategory === "All") return essentials;
+    return byCategory[clickedCategory] ?? [];
+  }, [clickedCategory, essentials, byCategory]);
+
+  const hasDataForCategory = essentialsForCategory.length > 0 || placesForCategory.length > 0;
+  const showGooglePlaces =
+    clickedCategory &&
+    clickedCategory !== "All" &&
+    (!hasFirestoreEssentials || !hasDataForCategory);
 
   useEffect(() => {
     if (!showGooglePlaces || !clickedCategory) {
@@ -130,15 +163,20 @@ export default function EssentialsPage() {
               </button>
             ))}
           </div>
-          {hasFirestoreEssentials && clickedCategory && byCategory[clickedCategory] && (
+          {hasFirestoreEssentials && clickedCategory && essentialsForCategory.length > 0 && (
             <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <h2 className="font-semibold text-slate-900 text-sm mb-2">Items in {clickedCategory}</h2>
+              <h2 className="font-semibold text-slate-900 text-sm mb-2">
+                {clickedCategory === "All" ? "All essential items" : `Items in ${clickedCategory}`}
+              </h2>
               <ul className="flex flex-wrap gap-2">
-                {byCategory[clickedCategory].map((item) => (
+                {essentialsForCategory.map((item) => (
                   <li
                     key={item.id}
                     className="px-3 py-2 rounded-lg bg-slate-50 border border-slate-100"
                   >
+                    {clickedCategory === "All" && item.category && (
+                      <span className="text-xs font-medium text-slate-500 uppercase">{item.category}</span>
+                    )}
                     <p className="font-medium text-slate-900 text-sm">{item.name}</p>
                     <p className="text-slate-500 text-xs mt-0.5">{item.description}</p>
                   </li>
@@ -149,8 +187,8 @@ export default function EssentialsPage() {
           {clickedCategory && (
             <div className="rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden">
               <p className="px-4 pt-3 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Places nearby — {clickedCategory}
-                {userCoords && " · Based on your location"}
+                {clickedCategory === "All" ? "All places with location" : `Places nearby — ${clickedCategory}`}
+                {userCoords && " · Sorted by distance"}
               </p>
               {showGooglePlaces ? (
                 loadingGoogle ? (
@@ -203,7 +241,9 @@ export default function EssentialsPage() {
                   <p className="px-4 py-6 text-slate-500 text-sm text-center">No places found. Enable location and try again.</p>
                 )
               ) : placesForCategory.length === 0 ? (
-                <p className="px-4 py-6 text-slate-500 text-sm text-center">No places in this category yet.</p>
+                <p className="px-4 py-6 text-slate-500 text-sm text-center">
+                  {clickedCategory === "All" ? "No places with location yet. Add places with coordinates in admin." : "No places in this category yet. Add places with matching type in admin."}
+                </p>
               ) : (
                 <div className="flex gap-4 overflow-x-auto px-4 pb-4 pt-1 snap-x snap-mandatory">
                   {placesForCategory.map((place) => {

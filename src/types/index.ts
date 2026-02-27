@@ -134,4 +134,26 @@ export const COLLECTIONS = {
   FEATURE_IMAGES: "featureImages",
   USER_LOCATIONS: "userLocations",
   FAMILY_CIRCLES: "familyCircles",
+  LOST_FOUND: "lostFound",
 } as const;
+
+// Lost & Found (person reported lost or found)
+export type LostFoundType = "lost" | "found";
+
+export type LostFoundStatus = "open" | "resolved";
+
+export interface LostFoundItem {
+  id: string;
+  type: LostFoundType;
+  name: string;
+  description: string;
+  imageUrl?: string;
+  contact?: string;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+  reportedBy: string; // userId
+  status?: LostFoundStatus; // admin can mark resolved
+  createdAt: string;
+  updatedAt?: string;
+}
