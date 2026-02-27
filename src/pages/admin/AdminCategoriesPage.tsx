@@ -76,19 +76,22 @@ export default function AdminCategoriesPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Manage Categories</h1>
-      <p className="text-slate-600 mb-6">Categories for filtering places on the user app.</p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Manage Categories</h1>
+        <p className="text-slate-600 mt-1">Categories for filtering places in the app. Order is used for display.</p>
+      </div>
       {error && (
-        <div className="mb-6 p-3 rounded-xl bg-red-50 text-red-700 text-sm border border-red-100">
-          {error}
+        <div className="p-4 rounded-xl bg-red-50 text-red-700 text-sm border border-red-100 flex items-center justify-between">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError("")} className="text-red-500 hover:text-red-700 font-medium">Dismiss</button>
         </div>
       )}
-      <form onSubmit={handleSubmit} className="card mb-8">
-        <h2 className="font-semibold text-slate-900 mb-4">
+      <section className="card border border-slate-200">
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">
           {editingId ? "Edit category" : "Add category"}
         </h2>
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             placeholder="Name"
@@ -135,13 +138,15 @@ export default function AdminCategoriesPage() {
               </button>
             )}
           </div>
-        </div>
-      </form>
-      <ul className="space-y-3">
+        </form>
+      </section>
+      <section>
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">All categories ({categories.length})</h2>
+      <ul className="space-y-2">
         {categories.map((cat) => (
           <li
             key={cat.id}
-            className="card flex justify-between items-center"
+            className="card flex justify-between items-center border border-slate-200"
           >
             <div className="flex items-center gap-3">
               {cat.icon && <span className="text-2xl">{cat.icon}</span>}
@@ -170,8 +175,9 @@ export default function AdminCategoriesPage() {
         ))}
       </ul>
       {categories.length === 0 && !loading && (
-        <p className="text-slate-500 mt-4">No categories yet. Add one above.</p>
+        <div className="card border border-slate-200 text-center py-12 text-slate-500">No categories yet. Add one above.</div>
       )}
+      </section>
     </div>
   );
 }

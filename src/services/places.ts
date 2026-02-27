@@ -21,7 +21,14 @@ export async function getPlaces(): Promise<Place[]> {
     orderBy("createdAt", "desc")
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Place));
+  const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Place));
+  list.sort((a, b) => {
+    const orderA = a.sortOrder ?? 9999;
+    const orderB = b.sortOrder ?? 9999;
+    if (orderA !== orderB) return orderA - orderB;
+    return (a.name || "").localeCompare(b.name || "");
+  });
+  return list;
 }
 
 export async function getPopularPlaces(): Promise<Place[]> {

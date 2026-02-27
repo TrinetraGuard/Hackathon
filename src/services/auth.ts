@@ -48,6 +48,21 @@ export async function getAppUser(uid: string): Promise<AppUser | null> {
   return snap.exists() ? (snap.data() as AppUser) : null;
 }
 
+/** Fetch multiple users by ID (e.g. for family circle member names). */
+export async function getAppUsersByIds(uids: string[]): Promise<Map<string, AppUser>> {
+  const db = getFirestore();
+  const map = new Map<string, AppUser>();
+  if (uids.length === 0) return map;
+  const unique = [...new Set(uids)];
+  await Promise.all(
+    unique.map(async (uid) => {
+      const snap = await getDoc(doc(db, "users", uid));
+      if (snap.exists()) map.set(uid, snap.data() as AppUser);
+    })
+  );
+  return map;
+}
+
 export function onAuthChange(callback: (user: AppUser | null) => void): () => void {
   return onAuthStateChanged(getAuth(), async (firebaseUser: FirebaseUser | null) => {
     if (!firebaseUser) {

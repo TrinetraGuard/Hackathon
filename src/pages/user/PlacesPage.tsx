@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getPlaces } from "@/services/places";
 import { getCategories } from "@/services/categories";
+import { getUserLocation, distanceKm, formatDistance, type UserCoords } from "@/utils/geolocation";
 import type { Place, Category } from "@/types";
 
 export default function PlacesPage() {
@@ -11,6 +12,7 @@ export default function PlacesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [userCoords, setUserCoords] = useState<UserCoords | null>(null);
 
   useEffect(() => {
     Promise.all([getPlaces(), getCategories().catch(() => [])])
@@ -22,9 +24,28 @@ export default function PlacesPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filteredPlaces = categoryId
+  useEffect(() => {
+    getUserLocation().then((coords) => coords && setUserCoords(coords));
+  }, []);
+
+  const filteredPlacesRaw = categoryId
     ? places.filter((p) => p.categoryId === categoryId)
     : places;
+
+  const filteredPlaces = useMemo(() => {
+    if (!userCoords) return filteredPlacesRaw;
+    return [...filteredPlacesRaw].sort((a, b) => {
+      const aHas = a.latitude != null && a.longitude != null;
+      const bHas = b.latitude != null && b.longitude != null;
+      if (!aHas && !bHas) return 0;
+      if (!aHas) return 1;
+      if (!bHas) return -1;
+      const distA = distanceKm(userCoords, { lat: a.latitude!, lng: a.longitude! });
+      const distB = distanceKm(userCoords, { lat: b.latitude!, lng: b.longitude! });
+      return distA - distB;
+    });
+  }, [filteredPlacesRaw, userCoords]);
+
   const activeCategory = categories.find((c) => c.id === categoryId);
 
   if (loading) {
@@ -48,7 +69,9 @@ export default function PlacesPage() {
     <div>
       <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Places</h1>
       <p className="text-slate-600 mb-4">
-        Pilgrimage and event locations you can explore.
+        {userCoords
+          ? "Places sorted by distance from your location."
+          : "Pilgrimage and event locations you can explore."}
       </p>
       {categories.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">
@@ -87,17 +110,45 @@ export default function PlacesPage() {
         </div>
       ) : (
         <ul className="space-y-4">
-          {filteredPlaces.map((place) => (
-            <li key={place.id} className="card">
-              <h2 className="font-semibold text-slate-900 text-lg">{place.name}</h2>
-              <p className="text-slate-600 mt-1">{place.description}</p>
-              {place.address && (
-                <p className="text-slate-500 text-sm mt-2 flex items-center gap-1">
-                  <span>📍</span> {place.address}
-                </p>
-              )}
-            </li>
-          ))}
+          {filteredPlaces.map((place) => {
+            const distKm =
+              userCoords && place.latitude != null && place.longitude != null
+                ? distanceKm(userCoords, { lat: place.latitude, lng: place.longitude })
+                : null;
+            return (
+              <li key={place.id} className="card card-hover flex flex-col sm:flex-row sm:items-start gap-4">
+                {place.imageUrl ? (
+                  <div className="w-full sm:w-32 h-32 rounded-xl bg-slate-200 shrink-0 overflow-hidden">
+                    <img
+                      src={place.imageUrl}
+                      alt={place.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full sm:w-32 h-32 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-4xl shrink-0">
+                    📍
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="font-semibold text-slate-900 text-lg">{place.name}</h2>
+                    {distKm != null && (
+                      <span className="px-2.5 py-0.5 rounded-lg bg-orange-100 text-orange-700 text-sm font-medium">
+                        {formatDistance(distKm)} away
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-slate-600 mt-1">{place.description}</p>
+                  {place.address && (
+                    <p className="text-slate-500 text-sm mt-2 flex items-center gap-1">
+                      <span>📍</span> {place.address}
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

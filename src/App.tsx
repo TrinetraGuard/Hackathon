@@ -12,13 +12,13 @@ import PlacesPage from "@/pages/user/PlacesPage";
 import EssentialsPage from "@/pages/user/EssentialsPage";
 import PlanPage from "@/pages/user/PlanPage";
 import MorePage from "@/pages/user/MorePage";
+import FamilyConnectPage from "@/pages/user/FamilyConnectPage";
 import ItineraryDetailPage from "@/pages/user/ItineraryDetailPage";
 import AdminOverviewPage from "@/pages/admin/AdminOverviewPage";
 import AdminPlacesPage from "@/pages/admin/AdminPlacesPage";
-import AdminEssentialsPage from "@/pages/admin/AdminEssentialsPage";
-import AdminCategoriesPage from "@/pages/admin/AdminCategoriesPage";
-import AdminEmergencyPage from "@/pages/admin/AdminEmergencyPage";
+import AdminAddPlacePage from "@/pages/admin/AdminAddPlacePage";
 import AdminFeatureImagesPage from "@/pages/admin/AdminFeatureImagesPage";
+import AdminUserLocationsPage from "@/pages/admin/AdminUserLocationsPage";
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -49,6 +49,7 @@ function AppRoutes() {
         <Route path="places" element={<PlacesPage />} />
         <Route path="essentials" element={<EssentialsPage />} />
         <Route path="plan" element={<PlanPage />} />
+        <Route path="family-connect" element={<FamilyConnectPage />} />
         <Route path="more" element={<MorePage />} />
         <Route path="itinerary/:id" element={<ItineraryDetailPage />} />
       </Route>
@@ -63,10 +64,9 @@ function AppRoutes() {
       >
         <Route index element={<AdminOverviewPage />} />
         <Route path="places" element={<AdminPlacesPage />} />
-        <Route path="essentials" element={<AdminEssentialsPage />} />
-        <Route path="categories" element={<AdminCategoriesPage />} />
-        <Route path="emergency" element={<AdminEmergencyPage />} />
+        <Route path="places/add" element={<AdminAddPlacePage />} />
         <Route path="feature-images" element={<AdminFeatureImagesPage />} />
+        <Route path="user-locations" element={<AdminUserLocationsPage />} />
       </Route>
 
       <Route path="*" element={<ErrorPage />} />

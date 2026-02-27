@@ -21,7 +21,16 @@ export async function getEssentials(): Promise<Essential[]> {
     orderBy("createdAt", "desc")
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Essential));
+  const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Essential));
+  list.sort((a, b) => {
+    const catCmp = (a.category || "").localeCompare(b.category || "");
+    if (catCmp !== 0) return catCmp;
+    const orderA = a.sortOrder ?? 9999;
+    const orderB = b.sortOrder ?? 9999;
+    if (orderA !== orderB) return orderA - orderB;
+    return (a.name || "").localeCompare(b.name || "");
+  });
+  return list;
 }
 
 export async function getEssentialById(id: string): Promise<Essential | null> {

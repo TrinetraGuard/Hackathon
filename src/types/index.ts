@@ -33,6 +33,8 @@ export interface Place {
   categoryId?: string;
   /** Matches essential category for "places nearby" e.g. Medical, Toilets, Hospitals */
   placeType?: string;
+  /** Display order (lower first); used for category-wise listing */
+  sortOrder?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -48,6 +50,8 @@ export interface Essential {
   locationLabel?: string;
   latitude?: number;
   longitude?: number;
+  /** Display order within category (lower first) */
+  sortOrder?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -100,6 +104,23 @@ export interface FamilyContact {
   createdAt: string;
 }
 
+// User's last known location (updated in real time when app is open)
+export interface UserLocationDoc {
+  userId: string;
+  latitude: number;
+  longitude: number;
+  updatedAt: string;
+}
+
+// Family circle: members share a code and can see each other's locations
+export interface FamilyCircle {
+  id: string; // same as code (document ID)
+  code: string;
+  createdBy: string;
+  memberIds: string[];
+  createdAt: string;
+}
+
 // Firestore paths
 export const COLLECTIONS = {
   USERS: "users",
@@ -111,4 +132,6 @@ export const COLLECTIONS = {
   FAMILY_CONTACTS: "familyContacts",
   USER_SELECTED_ESSENTIALS: "userSelectedEssentials",
   FEATURE_IMAGES: "featureImages",
+  USER_LOCATIONS: "userLocations",
+  FAMILY_CIRCLES: "familyCircles",
 } as const;

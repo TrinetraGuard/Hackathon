@@ -19,17 +19,24 @@ export async function getEssentialsCount(): Promise<number> {
   return snap.size;
 }
 
+export async function getCategoriesCount(): Promise<number> {
+  const snap = await getDocs(collection(db, COLLECTIONS.CATEGORIES));
+  return snap.size;
+}
+
 export interface AdminOverview {
   usersCount: number;
   placesCount: number;
   essentialsCount: number;
+  categoriesCount: number;
 }
 
 export async function getAdminOverview(): Promise<AdminOverview> {
-  const [usersCount, placesCount, essentialsCount] = await Promise.all([
+  const [usersCount, placesCount, essentialsCount, categoriesCount] = await Promise.all([
     getUsersCount(),
     getPlacesCount(),
     getEssentialsCount(),
+    getCategoriesCount(),
   ]);
-  return { usersCount, placesCount, essentialsCount };
+  return { usersCount, placesCount, essentialsCount, categoriesCount };
 }

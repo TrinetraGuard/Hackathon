@@ -60,6 +60,10 @@ VITE_FIREBASE_APP_ID=1:123456789:web:abc123
   Auto-generated IDs. Shown in the scrolling section on the website home.  
   Fields: `imageUrl`, `title?`, `caption?`, `sortOrder?`, `createdAt`.
 
+- **familyCircles** (collection)  
+  Document ID = 6-character family code (e.g. `ABC123`). Used for Family Connect: one user creates a code, others join with it to see each other’s locations.  
+  Fields: `code`, `createdBy` (userId), `memberIds` (array of userIds), `createdAt`.
+
 ## 4. Admin login
 
 **Default admin credentials** (for first-time setup):
@@ -98,6 +102,15 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if request.auth != null && isAdmin();
     }
+    match /userLocations/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /familyCircles/{code} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+    }
   }
 }
 ```
@@ -115,3 +128,24 @@ Then run the app:
 ```bash
 npm start
 ```
+
+## 7. Google Places API (Essential Needs – nearby places)
+
+When there are no essentials in Firestore, the app shows default categories (Medical, Hospitals, Pharmacies, Toilets). Tapping “Show places nearby” fetches nearby places using the **Google Places API**.
+
+1. Create a file `.env` in the project root (if it doesn’t exist).
+2. Add your Google Places API key:
+   ```env
+   VITE_GOOGLE_PLACES_API_KEY=your_api_key_here
+   ```
+3. In [Google Cloud Console](https://console.cloud.google.com/), enable **Places API** (or “Places API (New)”) for your project and restrict the key (e.g. to Places API and your app’s domain).
+4. Restart the dev server after changing `.env`.
+
+If you see “No places found” or CORS errors in the browser, the Legacy Nearby Search may be blocked from the front end. In that case you’ll need a small backend or serverless function that calls the API and returns results to the app.
+
+## 8. Family Connect (optional)
+
+Family Connect lets users create a **family code** and share it so others can join the same circle. Everyone in the circle can see each other's **live location on a map** and how far each person is from the current user.
+
+- The Family Connect map uses the same **Maps JavaScript API** key as Essential Needs (`VITE_GOOGLE_PLACES_API_KEY`). Ensure that API is enabled in Google Cloud.
+- Each user's location is stored in **userLocations** and updated in real time while the app is open. Family members' locations are read from that collection.

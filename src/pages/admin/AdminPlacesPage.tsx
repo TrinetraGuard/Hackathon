@@ -1,25 +1,15 @@
-import { useEffect, useState } from "react";
-import { getPlaces, createPlace, updatePlace, deletePlace } from "@/services/places";
+import { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { getPlaces, deletePlace } from "@/services/places";
 import { getCategories } from "@/services/categories";
-import { getEssentials } from "@/services/essentials";
 import type { Place, Category } from "@/types";
 
 export default function AdminPlacesPage() {
   const [places, setPlaces] = useState<Place[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [essentialCategories, setEssentialCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    address: "",
-    imageUrl: "",
-    isPopular: false,
-    categoryId: "",
-    placeType: "",
-  });
+  const [filterCategoryId, setFilterCategoryId] = useState<string>("");
 
   const loadPlaces = () => {
     setLoading(true);
@@ -32,197 +22,175 @@ export default function AdminPlacesPage() {
   useEffect(() => {
     loadPlaces();
     getCategories().then(setCategories).catch(() => []);
-    getEssentials().then((list) => {
-      const cats = [...new Set(list.map((e) => e.category.trim()).filter(Boolean))].sort();
-      setEssentialCategories(cats);
-    }).catch(() => []);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    try {
-      if (editingId) {
-        await updatePlace(editingId, form);
-        setEditingId(null);
-      } else {
-        await createPlace(form);
-      }
-      setForm({ name: "", description: "", address: "", imageUrl: "", isPopular: false, categoryId: "", placeType: "" });
-      loadPlaces();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Operation failed");
-    }
-  };
-
-  const handleEdit = (place: Place) => {
-    setEditingId(place.id);
-    setForm({
-      name: place.name,
-      description: place.description,
-      address: place.address ?? "",
-      imageUrl: place.imageUrl ?? "",
-      isPopular: place.isPopular ?? false,
-      categoryId: place.categoryId ?? "",
-      placeType: place.placeType ?? "",
-    });
-  };
-
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this place?")) return;
+    if (!window.confirm("Delete this place? This cannot be undone.")) return;
     setError("");
     try {
       await deletePlace(id);
       loadPlaces();
-      if (editingId === id) setEditingId(null);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Delete failed");
     }
   };
 
-  const clearForm = () => {
-    setEditingId(null);
-    setForm({ name: "", description: "", address: "", imageUrl: "", isPopular: false, categoryId: "", placeType: "" });
-  };
+  const filteredPlaces = useMemo(() => {
+    if (!filterCategoryId) return places;
+    if (filterCategoryId === "__uncategorized__") return places.filter((p) => !p.categoryId);
+    return places.filter((p) => p.categoryId === filterCategoryId);
+  }, [places, filterCategoryId]);
+
+  const placesByCategory = useMemo(() => {
+    const map = new Map<string, Place[]>();
+    for (const p of filteredPlaces) {
+      const key = p.categoryId || "Uncategorized";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(p);
+    }
+    const catNames = new Map(categories.map((c) => [c.id, c.name]));
+    const uncategorized = "Uncategorized";
+    const sorted = Array.from(map.entries()).sort(([a], [b]) => {
+      if (a === uncategorized) return 1;
+      if (b === uncategorized) return -1;
+      return (catNames.get(a) || a).localeCompare(catNames.get(b) || b);
+    });
+    return sorted;
+  }, [filteredPlaces, categories]);
+
+  const getCategoryName = (categoryId: string) =>
+    categoryId === "Uncategorized" ? "Uncategorized" : (categories.find((c) => c.id === categoryId)?.name ?? categoryId);
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
+      <div className="flex flex-col items-center justify-center py-16">
         <div className="w-10 h-10 border-2 border-slate-400 border-t-transparent rounded-full animate-spin mb-3" />
-        <p className="text-slate-500 text-sm">Loading...</p>
+        <p className="text-slate-500 text-sm">Loading places...</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Manage Places</h1>
-      <p className="text-slate-600 mb-6">Add, edit, or remove places visible to users.</p>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Manage places</h1>
+          <p className="text-slate-600 text-sm mt-0.5">
+            View, edit, and delete places. Users see these on the app.
+          </p>
+        </div>
+        <Link
+          to="/admin/places/add"
+          className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-orange-600 text-white font-semibold text-sm hover:bg-orange-700 transition-colors shrink-0"
+        >
+          <span>➕</span> Add place
+        </Link>
+      </div>
+
       {error && (
-        <div className="mb-6 p-3 rounded-xl bg-red-50 text-red-700 text-sm border border-red-100">
-          {error}
+        <div className="p-4 rounded-xl bg-red-50 text-red-700 text-sm border border-red-100 flex items-center justify-between">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError("")} className="text-red-500 hover:text-red-700 font-medium">
+            Dismiss
+          </button>
         </div>
       )}
-      <form onSubmit={handleSubmit} className="card mb-8">
-        <h2 className="font-semibold text-slate-900 mb-4">
-          {editingId ? "Edit place" : "Add new place"}
-        </h2>
-        <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Name"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            required
-            className="input-field"
-          />
-          <textarea
-            placeholder="Description"
-            value={form.description}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            required
-            rows={3}
-            className="input-field resize-none"
-          />
-          <input
-            type="text"
-            placeholder="Address (optional)"
-            value={form.address}
-            onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-            className="input-field"
-          />
-          <input
-            type="url"
-            placeholder="Image URL (optional)"
-            value={form.imageUrl}
-            onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-            className="input-field"
-          />
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.isPopular}
-              onChange={(e) => setForm((f) => ({ ...f, isPopular: e.target.checked }))}
-              className="rounded border-slate-300"
-            />
-            <span className="text-sm font-medium text-slate-700">Show in Popular Places on home</span>
-          </label>
+
+      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm font-medium text-slate-700">
+            {filteredPlaces.length} place{filteredPlaces.length !== 1 ? "s" : ""}
+          </span>
           {categories.length > 0 && (
             <select
-              value={form.categoryId}
-              onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-              className="input-field"
+              value={filterCategoryId}
+              onChange={(e) => setFilterCategoryId(e.target.value)}
+              className="input-field max-w-[220px] py-2 text-sm"
             >
-              <option value="">No category</option>
+              <option value="">All categories</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
+              <option value="__uncategorized__">Uncategorized</option>
             </select>
           )}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Place type (for Essential Needs)</label>
-            <p className="text-xs text-slate-500 mb-1">Match an essential category so this place shows under &quot;Places nearby&quot; (e.g. Medical, Toilets, Hospitals).</p>
-            <select
-              value={form.placeType}
-              onChange={(e) => setForm((f) => ({ ...f, placeType: e.target.value }))}
-              className="input-field"
-            >
-              <option value="">None</option>
-              {essentialCategories.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex gap-3">
-            <button type="submit" className="btn-primary max-w-[140px]">
-              {editingId ? "Update" : "Add place"}
-            </button>
-            {editingId && (
-              <button type="button" onClick={clearForm} className="btn-secondary max-w-[120px]">
-                Cancel
-              </button>
-            )}
-          </div>
         </div>
-      </form>
-      <ul className="space-y-3">
-        {places.map((place) => (
-          <li
-            key={place.id}
-            className="card flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3"
-          >
-            <div className="min-w-0">
-              <h3 className="font-semibold text-slate-900">{place.name}</h3>
-              <p className="text-slate-600 text-sm mt-1">{place.description}</p>
-              {place.address && (
-                <p className="text-slate-500 text-xs mt-2">📍 {place.address}</p>
-              )}
-              {place.placeType && (
-                <p className="text-orange-600 text-xs mt-1 font-medium">Type: {place.placeType}</p>
-              )}
-            </div>
-            <div className="flex gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => handleEdit(place)}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium text-orange-600 hover:bg-orange-50"
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDelete(place.id)}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-      {places.length === 0 && !loading && (
-        <p className="text-slate-500 mt-4">No places yet. Add one using the form above.</p>
-      )}
+
+        {filteredPlaces.length === 0 ? (
+          <div className="p-12 text-center">
+            <p className="text-slate-500 mb-4">
+              {places.length === 0 ? "No places yet." : "No places in this category."}
+            </p>
+            <Link
+              to="/admin/places/add"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 text-white font-medium text-sm hover:bg-orange-700"
+            >
+              ➕ Add your first place
+            </Link>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {placesByCategory.map(([categoryKey, list]) => (
+              <div key={categoryKey} className="p-4">
+                <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center text-slate-600 text-sm">
+                    {categories.find((c) => c.id === categoryKey)?.icon || "📍"}
+                  </span>
+                  {getCategoryName(categoryKey)} ({list.length})
+                </h2>
+                <ul className="space-y-2">
+                  {list.map((place) => (
+                    <li
+                      key={place.id}
+                      className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/30 hover:bg-slate-50/60 transition-colors"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-semibold text-slate-900">{place.name}</h3>
+                          {place.isPopular && (
+                            <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-medium">
+                              Popular
+                            </span>
+                          )}
+                          {place.placeType && (
+                            <span className="px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 text-xs font-medium">
+                              {place.placeType}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-slate-600 text-sm mt-0.5 line-clamp-2">{place.description}</p>
+                        {place.address && (
+                          <p className="text-slate-500 text-xs mt-1 flex items-center gap-1">📍 {place.address}</p>
+                        )}
+                        {(place.latitude != null || place.longitude != null) && (
+                          <p className="text-slate-400 text-xs mt-0.5">
+                            {place.latitude?.toFixed(4)}, {place.longitude?.toFixed(4)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Link
+                          to={`/admin/places/add?edit=${place.id}`}
+                          className="px-3 py-2 rounded-lg text-sm font-medium text-orange-600 hover:bg-orange-50 border border-orange-200 transition-colors"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(place.id)}
+                          className="px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 border border-red-200 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
