@@ -114,20 +114,21 @@ export default function FamilyConnectPage() {
 
   // Update map markers: current user + all members
   useEffect(() => {
-    if (!mapReady || !window.google?.maps || !circle) return;
+    const g = window.google;
+    if (!mapReady || !g?.maps || !circle) return;
     const map = mapInstanceRef.current;
     if (!map) return;
 
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    const bounds = new window.google.maps.LatLngBounds();
+    const bounds = new g.maps.LatLngBounds();
     let hasAny = false;
 
     // Current user
-    if (userCoords) {
-      const pos = new window.google.maps.LatLng(userCoords.lat, userCoords.lng);
-      const marker = new window.google.maps.Marker({
+    if (userCoords && g?.maps) {
+      const pos = new g.maps.LatLng(userCoords.lat, userCoords.lng);
+      const marker = new g.maps.Marker({
         position: pos,
         map,
         title: "You",
@@ -139,13 +140,14 @@ export default function FamilyConnectPage() {
     }
 
     // Members (exclude self)
+    if (!g?.maps) return;
     circle.memberIds.forEach((memberId) => {
       if (memberId === userId) return;
       const loc = memberLocations[memberId];
       if (!loc?.latitude || loc.longitude == null) return;
-      const pos = new window.google.maps.LatLng(loc.latitude, loc.longitude);
+      const pos = new g.maps.LatLng(loc.latitude, loc.longitude);
       const name = memberNames[memberId] || `Member ${memberId.slice(0, 6)}`;
-      const marker = new window.google.maps.Marker({
+      const marker = new g.maps.Marker({
         position: pos,
         map,
         title: name,
@@ -158,8 +160,8 @@ export default function FamilyConnectPage() {
 
     if (hasAny) {
       const m = map as unknown as { setCenter: (c: unknown) => void; setZoom: (z: number) => void; fitBounds: (b: unknown, p?: object) => void };
-      if (userCoords) {
-        m.setCenter(new window.google.maps.LatLng(userCoords.lat, userCoords.lng));
+      if (userCoords && g) {
+        m.setCenter(new g.maps.LatLng(userCoords.lat, userCoords.lng));
         m.setZoom(markersRef.current.length === 1 ? 14 : 12);
       }
       if (markersRef.current.length > 1) {
@@ -288,7 +290,6 @@ export default function FamilyConnectPage() {
   }
 
   // In a circle: show code, map, list with distances
-  const others = circle.memberIds.filter((id) => id !== userId);
   const currentLatLng = userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : null;
 
   return (
