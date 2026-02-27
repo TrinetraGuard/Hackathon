@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { loadGoogleMapsScript } from "@/services/googlePlaces";
 import { subscribeToAllUserLocations, type UserLocationWithId } from "@/services/userLocation";
+import type { MapMarkerInstance, MapInstance } from "@/types/google-maps";
 
 const DEFAULT_CENTER = { lat: 25.4358, lng: 81.8463 };
 const DEFAULT_ZOOM = 12;
 
 export default function AdminUserLocationsPage() {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<unknown | null>(null);
-  const markersRef = useRef<google.maps.MapMarkerInstance[]>([]);
+  const mapInstanceRef = useRef<MapInstance | null>(null);
+  const markersRef = useRef<MapMarkerInstance[]>([]);
   const [locations, setLocations] = useState<UserLocationWithId[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [error, setError] = useState("");
@@ -22,8 +23,9 @@ export default function AdminUserLocationsPage() {
     }
     loadGoogleMapsScript()
       .then(() => {
-        if (!mapRef.current || !window.google?.maps) return;
-        const map = new window.google.maps.Map(mapRef.current, {
+        const g = window.google;
+        if (!mapRef.current || !g?.maps) return;
+        const map = new g.maps.Map(mapRef.current, {
           center: DEFAULT_CENTER,
           zoom: DEFAULT_ZOOM,
           mapTypeControl: true,
@@ -37,22 +39,23 @@ export default function AdminUserLocationsPage() {
   }, []);
 
   useEffect(() => {
-    if (!mapReady || !window.google?.maps) return;
+    const g = window.google;
+    if (!mapReady || !g?.maps) return;
     const unsubscribe = subscribeToAllUserLocations((list) => {
       setLocations(list);
-      const map = mapInstanceRef.current as google.maps.Map | null;
+      const map = mapInstanceRef.current;
       if (!map) return;
       markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
-      const bounds = new window.google.maps.LatLngBounds();
+      const bounds = new g.maps.LatLngBounds();
       let hasAny = false;
       list.forEach((loc, index) => {
         const lat = loc.latitude;
         const lng = loc.longitude;
         if (lat == null || lng == null) return;
         hasAny = true;
-        const position = new window.google.maps.LatLng(lat, lng);
-        const marker = new window.google.maps.Marker({
+        const position = new g.maps.LatLng(lat, lng);
+        const marker = new g.maps.Marker({
           position,
           map,
           title: `User ${loc.userId}`,
@@ -62,12 +65,11 @@ export default function AdminUserLocationsPage() {
         bounds.extend(position);
       });
       if (hasAny && list.length > 0) {
-        const m = map as { setCenter: (c: unknown) => void; setZoom: (z: number) => void; fitBounds: (b: unknown, p?: object) => void };
         if (list.length === 1) {
-          m.setCenter(new window.google.maps.LatLng(list[0].latitude!, list[0].longitude!));
-          m.setZoom(14);
+          map.setCenter(new g.maps.LatLng(list[0].latitude!, list[0].longitude!));
+          map.setZoom(14);
         } else {
-          m.fitBounds(bounds, { top: 60, right: 60, bottom: 60, left: 60 });
+          map.fitBounds(bounds, { top: 60, right: 60, bottom: 60, left: 60 });
         }
       }
     });

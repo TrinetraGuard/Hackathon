@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { FamilyCircle } from "@/types";
 import type { UserLocationDoc } from "@/types";
+import type { MapMarkerInstance, MapInstance } from "@/types/google-maps";
 import { getAppUsersByIds } from "@/services/auth";
 import { loadGoogleMapsScript } from "@/services/googlePlaces";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,8 +24,8 @@ export default function FamilyConnectPage() {
   const { user } = useAuth();
   const userId = user?.uid ?? "";
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.MapInstance | null>(null);
-  const markersRef = useRef<google.maps.MapMarkerInstance[]>([]);
+  const mapInstanceRef = useRef<MapInstance | null>(null);
+  const markersRef = useRef<MapMarkerInstance[]>([]);
 
   const [circle, setCircle] = useState<FamilyCircle | null>(null);
   const [joinCode, setJoinCode] = useState("");
@@ -98,8 +99,9 @@ export default function FamilyConnectPage() {
     if (!apiKey) return;
     loadGoogleMapsScript()
       .then(() => {
-        if (!mapRef.current || !window.google?.maps) return;
-        const map = new window.google.maps.Map(mapRef.current, {
+        const g = window.google;
+        if (!mapRef.current || !g?.maps) return;
+        const map = new g.maps.Map(mapRef.current, {
           center: DEFAULT_MAP,
           zoom: DEFAULT_ZOOM,
           mapTypeControl: true,
