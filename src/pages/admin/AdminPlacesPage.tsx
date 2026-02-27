@@ -1,13 +1,25 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getPlaces, createPlace, updatePlace, deletePlace } from "@/services/places";
-import type { Place } from "@/types";
+import { getCategories } from "@/services/categories";
+import { getEssentials } from "@/services/essentials";
+import type { Place, Category } from "@/types";
 
 export default function AdminPlacesPage() {
   const [places, setPlaces] = useState<Place[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [essentialCategories, setEssentialCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", description: "", address: "" });
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    address: "",
+    imageUrl: "",
+    isPopular: false,
+    categoryId: "",
+    placeType: "",
+  });
 
   const loadPlaces = () => {
     setLoading(true);
@@ -19,6 +31,11 @@ export default function AdminPlacesPage() {
 
   useEffect(() => {
     loadPlaces();
+    getCategories().then(setCategories).catch(() => []);
+    getEssentials().then((list) => {
+      const cats = [...new Set(list.map((e) => e.category.trim()).filter(Boolean))].sort();
+      setEssentialCategories(cats);
+    }).catch(() => []);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +48,7 @@ export default function AdminPlacesPage() {
       } else {
         await createPlace(form);
       }
-      setForm({ name: "", description: "", address: "" });
+      setForm({ name: "", description: "", address: "", imageUrl: "", isPopular: false, categoryId: "", placeType: "" });
       loadPlaces();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Operation failed");
@@ -44,6 +61,10 @@ export default function AdminPlacesPage() {
       name: place.name,
       description: place.description,
       address: place.address ?? "",
+      imageUrl: place.imageUrl ?? "",
+      isPopular: place.isPopular ?? false,
+      categoryId: place.categoryId ?? "",
+      placeType: place.placeType ?? "",
     });
   };
 
@@ -61,7 +82,7 @@ export default function AdminPlacesPage() {
 
   const clearForm = () => {
     setEditingId(null);
-    setForm({ name: "", description: "", address: "" });
+    setForm({ name: "", description: "", address: "", imageUrl: "", isPopular: false, categoryId: "", placeType: "" });
   };
 
   if (loading) {
@@ -110,6 +131,48 @@ export default function AdminPlacesPage() {
             onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
             className="input-field"
           />
+          <input
+            type="url"
+            placeholder="Image URL (optional)"
+            value={form.imageUrl}
+            onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+            className="input-field"
+          />
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.isPopular}
+              onChange={(e) => setForm((f) => ({ ...f, isPopular: e.target.checked }))}
+              className="rounded border-slate-300"
+            />
+            <span className="text-sm font-medium text-slate-700">Show in Popular Places on home</span>
+          </label>
+          {categories.length > 0 && (
+            <select
+              value={form.categoryId}
+              onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
+              className="input-field"
+            >
+              <option value="">No category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Place type (for Essential Needs)</label>
+            <p className="text-xs text-slate-500 mb-1">Match an essential category so this place shows under &quot;Places nearby&quot; (e.g. Medical, Toilets, Hospitals).</p>
+            <select
+              value={form.placeType}
+              onChange={(e) => setForm((f) => ({ ...f, placeType: e.target.value }))}
+              className="input-field"
+            >
+              <option value="">None</option>
+              {essentialCategories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex gap-3">
             <button type="submit" className="btn-primary max-w-[140px]">
               {editingId ? "Update" : "Add place"}
@@ -134,12 +197,15 @@ export default function AdminPlacesPage() {
               {place.address && (
                 <p className="text-slate-500 text-xs mt-2">📍 {place.address}</p>
               )}
+              {place.placeType && (
+                <p className="text-orange-600 text-xs mt-1 font-medium">Type: {place.placeType}</p>
+              )}
             </div>
             <div className="flex gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => handleEdit(place)}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50"
+                className="px-3 py-1.5 rounded-lg text-sm font-medium text-orange-600 hover:bg-orange-50"
               >
                 Edit
               </button>

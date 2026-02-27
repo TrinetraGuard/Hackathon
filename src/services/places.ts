@@ -26,7 +26,8 @@ export async function getPlaces(): Promise<Place[]> {
 
 export async function getPopularPlaces(): Promise<Place[]> {
   const all = await getPlaces();
-  return all.filter((p) => p.isPopular).slice(0, 8);
+  const popular = all.filter((p) => p.isPopular);
+  return popular.length > 0 ? popular.slice(0, 8) : all.slice(0, 8);
 }
 
 export async function getPlaceById(id: string): Promise<Place | null> {

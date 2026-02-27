@@ -1,8 +1,8 @@
-# Firebase setup for Kumbhathon
+# Firebase setup for Trinetra
 
 ## 1. Create a Firebase project
 
-1. Go to [Firebase Console](https://console.firebase.google.com/) and create a new project (e.g. "kumbhathon").
+1. Go to [Firebase Console](https://console.firebase.google.com/) and create a new project (e.g. "trinetra").
 2. Enable **Authentication** → Sign-in method → **Email/Password**.
 3. Create a **Firestore Database** (start in test mode for development; lock down with rules for production).
 
@@ -30,11 +30,35 @@ VITE_FIREBASE_APP_ID=1:123456789:web:abc123
 
 - **places** (collection)  
   Auto-generated IDs.  
-  Fields: `name`, `description`, `address?`, `createdAt`, `updatedAt`.
+  Fields: `name`, `description`, `address?`, `imageUrl?`, `isPopular?`, `categoryId?`, `placeType?` (e.g. Medical, Toilets, Hospitals — matches essential category for “places nearby”), `createdAt`, `updatedAt`.
 
 - **essentials** (collection)  
   Auto-generated IDs.  
-  Fields: `name`, `category`, `description`, `createdAt`, `updatedAt`.
+  Fields: `name`, `category`, `description`, `locationLabel?`, `createdAt`, `updatedAt`.
+
+- **categories** (collection)  
+  Auto-generated IDs.  
+  Fields: `name`, `slug`, `icon?`, `sortOrder?`, `createdAt`.
+
+- **itineraries** (collection)  
+  Auto-generated IDs.  
+  Fields: `userId`, `title`, `items` (array of `{ placeId, placeName, dayOrder?, notes? }`), `createdAt`, `updatedAt`.
+
+- **emergency** (collection)  
+  Auto-generated IDs.  
+  Fields: `title`, `number`, `type` (`"police"` | `"hospital"` | `"helpline"` | `"other"`), `description?`, `createdAt`.
+
+- **familyContacts** (collection)  
+  Auto-generated IDs.  
+  Fields: `userId`, `name`, `phone`, `relation?`, `createdAt`.
+
+- **userSelectedEssentials** (collection)  
+  Document ID: `{userId}_selected`.  
+  Fields: `userId`, `essentialIds` (array of strings), `updatedAt`.
+
+- **featureImages** (collection)  
+  Auto-generated IDs. Shown in the scrolling section on the website home.  
+  Fields: `imageUrl`, `title?`, `caption?`, `sortOrder?`, `createdAt`.
 
 ## 4. Admin login
 

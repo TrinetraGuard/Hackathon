@@ -1,29 +1,25 @@
-import React from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { BottomNav } from "@/components/BottomNav";
 
 export function UserLayout() {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/login");
-  };
+  const { user } = useAuth();
 
   return (
-    <div className="pg min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link to="/dashboard" className="text-xl font-bold text-slate-800">
-            Kumbhathon
+    <div className="pg min-h-[100dvh] bg-slate-50 flex flex-col">
+      {/* Top bar: compact on mobile, full nav on desktop */}
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 safe-area-top shrink-0">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/dashboard" className="text-lg md:text-xl font-bold text-slate-800 tap">
+            Trinetra
           </Link>
-          <nav className="flex items-center gap-1 sm:gap-4">
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
             <Link
               to="/dashboard"
               className="px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium text-sm"
             >
-              Dashboard
+              Home
             </Link>
             <Link
               to="/places"
@@ -37,22 +33,31 @@ export function UserLayout() {
             >
               Essentials
             </Link>
-            <span className="hidden sm:inline text-slate-500 text-sm border-l border-slate-200 pl-4 ml-2">
+            <Link
+              to="/plan"
+              className="px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium text-sm"
+            >
+              Plan
+            </Link>
+            <Link
+              to="/more"
+              className="px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium text-sm"
+            >
+              More
+            </Link>
+            <span className="text-slate-500 text-sm border-l border-slate-200 pl-4 ml-2">
               {user?.displayName}
             </span>
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-red-600 text-sm font-medium"
-            >
-              Sign out
-            </button>
           </nav>
         </div>
       </header>
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-4 md:py-6 pb-nav md:pb-8">
         <Outlet />
       </main>
+
+      {/* Mobile bottom nav */}
+      <BottomNav />
     </div>
   );
 }

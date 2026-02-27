@@ -10,9 +10,15 @@ import RegisterPage from "@/pages/auth/RegisterPage";
 import UserDashboardPage from "@/pages/user/UserDashboardPage";
 import PlacesPage from "@/pages/user/PlacesPage";
 import EssentialsPage from "@/pages/user/EssentialsPage";
+import PlanPage from "@/pages/user/PlanPage";
+import MorePage from "@/pages/user/MorePage";
+import ItineraryDetailPage from "@/pages/user/ItineraryDetailPage";
 import AdminOverviewPage from "@/pages/admin/AdminOverviewPage";
 import AdminPlacesPage from "@/pages/admin/AdminPlacesPage";
 import AdminEssentialsPage from "@/pages/admin/AdminEssentialsPage";
+import AdminCategoriesPage from "@/pages/admin/AdminCategoriesPage";
+import AdminEmergencyPage from "@/pages/admin/AdminEmergencyPage";
+import AdminFeatureImagesPage from "@/pages/admin/AdminFeatureImagesPage";
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -20,7 +26,7 @@ function AppRoutes() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
-        <div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-3" />
+        <div className="w-10 h-10 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-3" />
         <p className="text-slate-500 text-sm">Loading...</p>
       </div>
     );
@@ -42,6 +48,9 @@ function AppRoutes() {
         <Route path="dashboard" element={<UserDashboardPage />} />
         <Route path="places" element={<PlacesPage />} />
         <Route path="essentials" element={<EssentialsPage />} />
+        <Route path="plan" element={<PlanPage />} />
+        <Route path="more" element={<MorePage />} />
+        <Route path="itinerary/:id" element={<ItineraryDetailPage />} />
       </Route>
 
       <Route
@@ -55,6 +64,9 @@ function AppRoutes() {
         <Route index element={<AdminOverviewPage />} />
         <Route path="places" element={<AdminPlacesPage />} />
         <Route path="essentials" element={<AdminEssentialsPage />} />
+        <Route path="categories" element={<AdminCategoriesPage />} />
+        <Route path="emergency" element={<AdminEmergencyPage />} />
+        <Route path="feature-images" element={<AdminFeatureImagesPage />} />
       </Route>
 
       <Route path="*" element={<ErrorPage />} />

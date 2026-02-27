@@ -1,5 +1,15 @@
-// User roles for Kumbhathon
+// User roles for Trinetra
 export type UserRole = "user" | "admin";
+
+// Feature image (admin-managed, shown on website home)
+export interface FeatureImage {
+  id: string;
+  imageUrl: string;
+  title?: string;
+  caption?: string;
+  sortOrder?: number;
+  createdAt: string;
+}
 
 // App user (stored in Firestore after signup/login)
 export interface AppUser {
@@ -21,6 +31,8 @@ export interface Place {
   imageUrl?: string;
   isPopular?: boolean;
   categoryId?: string;
+  /** Matches essential category for "places nearby" e.g. Medical, Toilets, Hospitals */
+  placeType?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -98,4 +110,5 @@ export const COLLECTIONS = {
   EMERGENCY: "emergency",
   FAMILY_CONTACTS: "familyContacts",
   USER_SELECTED_ESSENTIALS: "userSelectedEssentials",
+  FEATURE_IMAGES: "featureImages",
 } as const;

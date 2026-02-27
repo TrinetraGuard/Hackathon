@@ -12,7 +12,7 @@ export default function AdminEssentialsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", category: "", description: "" });
+  const [form, setForm] = useState({ name: "", category: "", description: "", locationLabel: "" });
 
   const loadEssentials = () => {
     setLoading(true);
@@ -36,7 +36,7 @@ export default function AdminEssentialsPage() {
       } else {
         await createEssential(form);
       }
-      setForm({ name: "", category: "", description: "" });
+      setForm({ name: "", category: "", description: "", locationLabel: "" });
       loadEssentials();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Operation failed");
@@ -49,6 +49,7 @@ export default function AdminEssentialsPage() {
       name: item.name,
       category: item.category,
       description: item.description,
+      locationLabel: item.locationLabel ?? "",
     });
   };
 
@@ -66,7 +67,7 @@ export default function AdminEssentialsPage() {
 
   const clearForm = () => {
     setEditingId(null);
-    setForm({ name: "", category: "", description: "" });
+    setForm({ name: "", category: "", description: "", locationLabel: "" });
   };
 
   if (loading) {
@@ -120,6 +121,13 @@ export default function AdminEssentialsPage() {
             rows={3}
             className="input-field resize-none"
           />
+          <input
+            type="text"
+            placeholder="Location / Area (optional, e.g. Sangam, Station)"
+            value={form.locationLabel}
+            onChange={(e) => setForm((f) => ({ ...f, locationLabel: e.target.value }))}
+            className="input-field"
+          />
           <div className="flex gap-3">
             <button type="submit" className="btn-primary max-w-[140px]">
               {editingId ? "Update" : "Add essential"}
@@ -151,7 +159,7 @@ export default function AdminEssentialsPage() {
               <button
                 type="button"
                 onClick={() => handleEdit(item)}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50"
+                className="px-3 py-1.5 rounded-lg text-sm font-medium text-orange-600 hover:bg-orange-50"
               >
                 Edit
               </button>

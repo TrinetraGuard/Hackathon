@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAdminOverview } from "@/services/admin";
 
@@ -37,7 +37,7 @@ export default function AdminOverviewPage() {
     <div>
       <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Admin Overview</h1>
       <p className="text-slate-600 mb-8">Summary of everything in the app.</p>
-      <div className="grid gap-5 sm:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <div className="card">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Users</p>
           <p className="text-3xl font-bold text-slate-900 mt-2">{overview.usersCount}</p>
@@ -47,7 +47,7 @@ export default function AdminOverviewPage() {
           <p className="text-3xl font-bold text-slate-900 mt-2">{overview.placesCount}</p>
           <Link
             to="/admin/places"
-            className="text-sm font-medium text-blue-600 hover:underline mt-3 inline-block"
+            className="text-sm font-medium text-orange-600 hover:underline mt-3 inline-block"
           >
             Manage places →
           </Link>
@@ -57,9 +57,21 @@ export default function AdminOverviewPage() {
           <p className="text-3xl font-bold text-slate-900 mt-2">{overview.essentialsCount}</p>
           <Link
             to="/admin/essentials"
-            className="text-sm font-medium text-blue-600 hover:underline mt-3 inline-block"
+            className="text-sm font-medium text-orange-600 hover:underline mt-3 inline-block"
           >
             Manage essentials →
+          </Link>
+        </div>
+        <div className="card">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Categories</p>
+          <Link to="/admin/categories" className="text-sm font-medium text-orange-600 hover:underline mt-3 inline-block">
+            Manage categories →
+          </Link>
+        </div>
+        <div className="card">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Emergency</p>
+          <Link to="/admin/emergency" className="text-sm font-medium text-orange-600 hover:underline mt-3 inline-block">
+            Manage emergency →
           </Link>
         </div>
       </div>

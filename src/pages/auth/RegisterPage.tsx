@@ -35,7 +35,7 @@ export default function RegisterPage() {
       <header className="bg-white border-b border-slate-200 py-4">
         <div className="max-w-6xl mx-auto px-4">
           <Link to="/" className="text-lg font-bold text-slate-800">
-            Kumbhathon
+            Trinetra
           </Link>
         </div>
       </header>
@@ -101,7 +101,7 @@ export default function RegisterPage() {
             </form>
             <p className="mt-5 text-center text-sm text-slate-600">
               Already have an account?{" "}
-              <Link to="/login" className="font-semibold text-blue-600 hover:underline">
+              <Link to="/login" className="font-semibold text-orange-600 hover:underline">
                 Sign in
               </Link>
             </p>
