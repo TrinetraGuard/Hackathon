@@ -11,6 +11,7 @@ const emptyForm = {
   latitude: "" as string | number,
   longitude: "" as string | number,
   categoryId: "",
+  sortOrder: "" as string | number,
 };
 
 export default function AdminAddPlacePage() {
@@ -45,6 +46,7 @@ export default function AdminAddPlacePage() {
             latitude: place.latitude ?? "",
             longitude: place.longitude ?? "",
             categoryId: place.categoryId ?? "",
+            sortOrder: place.sortOrder ?? "",
           });
         }
       })
@@ -55,16 +57,30 @@ export default function AdminAddPlacePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    const lat = typeof form.latitude === "string" ? (form.latitude ? Number(form.latitude) : undefined) : form.latitude;
+    const lng = typeof form.longitude === "string" ? (form.longitude ? Number(form.longitude) : undefined) : form.longitude;
+    if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
+      setError("Please enter valid latitude and longitude.");
+      return;
+    }
+    if (lat < -90 || lat > 90) {
+      setError("Latitude must be between -90 and 90.");
+      return;
+    }
+    if (lng < -180 || lng > 180) {
+      setError("Longitude must be between -180 and 180.");
+      return;
+    }
     setSubmitting(true);
     try {
-      const lat = typeof form.latitude === "string" ? (form.latitude ? Number(form.latitude) : undefined) : form.latitude;
-      const lng = typeof form.longitude === "string" ? (form.longitude ? Number(form.longitude) : undefined) : form.longitude;
+      const sortOrder = typeof form.sortOrder === "string" ? (form.sortOrder ? Number(form.sortOrder) : undefined) : form.sortOrder;
       const payload = {
         name: form.name.trim(),
         description: form.description.trim(),
         latitude: lat,
         longitude: lng,
         categoryId: form.categoryId || undefined,
+        ...(typeof sortOrder === "number" && !Number.isNaN(sortOrder) ? { sortOrder } : {}),
       };
       if (isEdit && editId) {
         await updatePlace(editId, payload);
@@ -189,6 +205,20 @@ export default function AdminAddPlacePage() {
               </select>
             </div>
           )}
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Display order (optional)</label>
+            <input
+              type="number"
+              min={0}
+              step={1}
+              placeholder="e.g. 0 (lower = first)"
+              value={form.sortOrder}
+              onChange={(e) => setForm((f) => ({ ...f, sortOrder: e.target.value ? e.target.value : "" }))}
+              className="input-field"
+            />
+            <p className="text-slate-500 text-xs mt-1">Lower numbers appear first within a category.</p>
+          </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
             <button

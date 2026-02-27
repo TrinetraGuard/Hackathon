@@ -49,6 +49,15 @@ export default function AdminPlacesPage() {
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(p);
     }
+    // Sort places within each category: sortOrder (asc, undefined last) then name
+    map.forEach((list) => {
+      list.sort((a, b) => {
+        const orderA = a.sortOrder ?? 9999;
+        const orderB = b.sortOrder ?? 9999;
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.name || "").localeCompare(b.name || "");
+      });
+    });
     const catNames = new Map(categories.map((c) => [c.id, c.name]));
     const uncategorized = "Uncategorized";
     const sorted = Array.from(map.entries()).sort(([a], [b]) => {
@@ -148,6 +157,11 @@ export default function AdminPlacesPage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-semibold text-slate-900">{place.name}</h3>
+                          {typeof place.sortOrder === "number" && (
+                            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-600 text-xs font-medium">
+                              Order: {place.sortOrder}
+                            </span>
+                          )}
                           {place.isPopular && (
                             <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-medium">
                               Popular
