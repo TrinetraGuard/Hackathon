@@ -1,3 +1,4 @@
+import { PlaceImage } from "@/components/PlaceImage";
 import { getCategories } from "@/services/categories";
 import { getPlaces } from "@/services/places";
 import type { Category, Place } from "@/types";
@@ -117,19 +118,18 @@ export default function PlacesPage() {
                 : null;
             return (
               <li key={place.id} className="card card-hover flex flex-col sm:flex-row sm:items-start gap-4">
-                {place.imageUrl ? (
-                  <div className="w-full sm:w-32 h-32 rounded-xl bg-slate-200 shrink-0 overflow-hidden">
-                    <img
-                      src={place.imageUrl}
-                      alt={place.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full sm:w-32 h-32 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-4xl shrink-0">
-                    📍
-                  </div>
-                )}
+                <div className="w-full sm:w-36 h-36 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                  <PlaceImage
+                    src={place.imageUrl}
+                    alt={place.name}
+                    containerClassName="w-full h-full"
+                    placeholder={
+                      <div className="w-full h-full rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-4xl">
+                        📍
+                      </div>
+                    }
+                  />
+                </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-semibold text-slate-900 text-lg">{place.name}</h2>

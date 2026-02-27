@@ -43,20 +43,30 @@ export async function getPlaceById(id: string): Promise<Place | null> {
   return snap.exists() ? { id: snap.id, ...snap.data() } as Place : null;
 }
 
+/** Remove undefined values; Firestore does not accept undefined. */
+function sanitizeForFirestore<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) out[k] = v;
+  }
+  return out;
+}
+
 export async function createPlace(data: Omit<Place, "id" | "createdAt" | "updatedAt">): Promise<string> {
-  const ref = await addDoc(collection(db, COLLECTIONS.PLACES), {
+  const ref = await addDoc(collection(db, COLLECTIONS.PLACES), sanitizeForFirestore({
     ...data,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-  });
+  }));
   return ref.id;
 }
 
 export async function updatePlace(id: string, data: Partial<Omit<Place, "id" | "createdAt">>): Promise<void> {
-  await updateDoc(doc(db, COLLECTIONS.PLACES, id), {
+  const sanitized = sanitizeForFirestore({
     ...data,
     updatedAt: new Date().toISOString(),
   });
+  await updateDoc(doc(db, COLLECTIONS.PLACES, id), sanitized as Record<string, string | number | boolean | object | null>);
 }
 
 export async function deletePlace(id: string): Promise<void> {

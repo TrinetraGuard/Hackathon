@@ -1,3 +1,4 @@
+import { PlaceImage } from "@/components/PlaceImage";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCategories } from "@/services/categories";
 import { getEssentials } from "@/services/essentials";
@@ -216,17 +217,12 @@ export default function UserDashboardPage() {
                   className="group rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all"
                 >
                   <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
-                    {place.imageUrl ? (
-                      <img
-                        src={place.imageUrl}
-                        alt={place.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-300 text-4xl">
-                        📍
-                      </div>
-                    )}
+                    <PlaceImage
+                      src={place.imageUrl}
+                      alt={place.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      containerClassName="w-full h-full"
+                    />
                     {distKm != null && (
                       <span className="absolute bottom-2 right-2 px-2 py-1 rounded-lg bg-slate-900/70 text-white text-xs font-medium">
                         {formatDistance(distKm)}
@@ -396,17 +392,12 @@ export default function UserDashboardPage() {
                           className="flex-shrink-0 w-[180px] sm:w-[200px] rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm snap-start"
                         >
                           <div className="aspect-[4/3] bg-slate-200 relative overflow-hidden">
-                            {place.imageUrl ? (
-                              <img
-                                src={place.imageUrl}
-                                alt={place.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-4xl text-slate-400">
-                                📍
-                              </div>
-                            )}
+                            <PlaceImage
+                              src={place.imageUrl}
+                              alt={place.name}
+                              className="w-full h-full object-cover"
+                              containerClassName="w-full h-full"
+                            />
                           </div>
                           <div className="p-3">
                             <p className="font-semibold text-slate-900 text-sm line-clamp-2">{place.name}</p>

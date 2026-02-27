@@ -1,3 +1,4 @@
+import { PlaceImage } from "@/components/PlaceImage";
 import { deletePlace, getPlaces } from "@/services/places";
 import type { Category, Place } from "@/types";
 import { useEffect, useMemo, useState } from "react";
@@ -148,15 +149,23 @@ export default function AdminPlacesPage() {
                   </span>
                   {getCategoryName(categoryKey)} ({list.length})
                 </h2>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {list.map((place) => (
                     <li
                       key={place.id}
-                      className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50/30 hover:bg-slate-50/60 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50/50 transition-colors shadow-sm"
                     >
+                      <div className="w-full sm:w-20 h-20 rounded-lg overflow-hidden bg-slate-100 shrink-0">
+                        <PlaceImage
+                          src={place.imageUrl}
+                          alt={place.name}
+                          className="w-full h-full object-cover"
+                          containerClassName="w-full h-20"
+                        />
+                      </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-semibold text-slate-900">{place.name}</h3>
+                          <h3 className="font-semibold text-slate-900 text-lg">{place.name}</h3>
                           {typeof place.sortOrder === "number" && (
                             <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-600 text-xs font-medium">
                               Order: {place.sortOrder}

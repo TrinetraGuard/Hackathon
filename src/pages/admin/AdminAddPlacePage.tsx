@@ -8,6 +8,7 @@ import { getCategories } from "@/services/categories";
 const emptyForm = {
   name: "",
   description: "",
+  imageUrl: "",
   latitude: "" as string | number,
   longitude: "" as string | number,
   categoryId: "",
@@ -24,8 +25,10 @@ export default function AdminAddPlacePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState(emptyForm);
+  const [imagePreviewError, setImagePreviewError] = useState(false);
 
   const isEdit = Boolean(editId);
+  const imagePreviewUrl = form.imageUrl.trim() || null;
 
   useEffect(() => {
     getCategories().then(setCategories).catch(() => []);
@@ -40,9 +43,11 @@ export default function AdminAddPlacePage() {
     getPlaceById(editId)
       .then((place) => {
         if (place) {
+          setImagePreviewError(false);
           setForm({
             name: place.name,
             description: place.description,
+            imageUrl: place.imageUrl ?? "",
             latitude: place.latitude ?? "",
             longitude: place.longitude ?? "",
             categoryId: place.categoryId ?? "",
@@ -79,7 +84,8 @@ export default function AdminAddPlacePage() {
         description: form.description.trim(),
         latitude: lat,
         longitude: lng,
-        categoryId: form.categoryId || undefined,
+        ...(form.imageUrl.trim() ? { imageUrl: form.imageUrl.trim() } : {}),
+        ...(form.categoryId.trim() ? { categoryId: form.categoryId.trim() } : {}),
         ...(typeof sortOrder === "number" && !Number.isNaN(sortOrder) ? { sortOrder } : {}),
       };
       if (isEdit && editId) {
@@ -161,6 +167,45 @@ export default function AdminAddPlacePage() {
               rows={4}
               className="input-field resize-none"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Image URL (optional)</label>
+            <input
+              type="url"
+              placeholder="https://example.com/place-image.jpg"
+              value={form.imageUrl}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, imageUrl: e.target.value }));
+                setImagePreviewError(false);
+              }}
+              className="input-field"
+            />
+            <p className="text-slate-500 text-xs mt-1">Public image link. It will be shown as the place thumbnail for users.</p>
+            {imagePreviewUrl && (
+              <div className="mt-3 rounded-xl border border-slate-200 overflow-hidden bg-slate-50">
+                <p className="px-3 py-2 text-xs font-medium text-slate-500 border-b border-slate-100">Preview</p>
+                <div className="p-3 flex items-start gap-4">
+                  <div className="w-24 h-24 rounded-lg bg-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                    {imagePreviewError ? (
+                      <span className="text-slate-400 text-xs text-center px-2">Invalid or inaccessible image</span>
+                    ) : (
+                      <img
+                        src={imagePreviewUrl}
+                        alt={`Preview: ${form.name || "Place"}`}
+                        className="w-full h-full object-cover"
+                        onError={() => setImagePreviewError(true)}
+                        onLoad={() => setImagePreviewError(false)}
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-800 truncate">{form.name || "Place name"}</p>
+                    <p className="text-slate-500 text-sm truncate">{imagePreviewUrl}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

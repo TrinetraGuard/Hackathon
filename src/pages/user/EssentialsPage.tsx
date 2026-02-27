@@ -1,3 +1,4 @@
+import { PlaceImage } from "@/components/PlaceImage";
 import { getEssentials } from "@/services/essentials";
 import {
     DEFAULT_ESSENTIAL_CATEGORIES,
@@ -221,17 +222,12 @@ export default function EssentialsPage() {
                         className="flex-shrink-0 w-[180px] sm:w-[200px] rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm snap-start"
                       >
                         <div className="aspect-[4/3] bg-slate-200 relative overflow-hidden">
-                          {place.imageUrl ? (
-                            <img
-                              src={place.imageUrl}
-                              alt={place.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-4xl text-slate-400">
-                              📍
-                            </div>
-                          )}
+                          <PlaceImage
+                            src={place.imageUrl}
+                            alt={place.name}
+                            className="w-full h-full object-cover"
+                            containerClassName="w-full h-full"
+                          />
                         </div>
                         <div className="p-3">
                           <p className="font-semibold text-slate-900 text-sm line-clamp-2">{place.name}</p>

@@ -126,8 +126,8 @@ export async function fetchNearbyPlaces(
         }
         const list = (results || []).slice(0, limit).map((p: PlaceResult) => {
           const loc = p.geometry?.location;
-          const lat = typeof loc?.lat === "function" ? (loc as { lat: () => number }).lat() : (loc as { lat?: number })?.lat;
-          const lng = typeof loc?.lng === "function" ? (loc as { lng: () => number }).lng() : (loc as { lng?: number })?.lng;
+          const lat = loc && typeof loc.lat === "function" ? loc.lat() : undefined;
+          const lng = loc && typeof loc.lng === "function" ? loc.lng() : undefined;
           return {
             name: p.name || "Unnamed",
             address: p.vicinity || "",
