@@ -4,24 +4,20 @@ const ErrorPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="pg md:flex md:justify-center md:items-center gap-6 bg-grey-200 font-[500]">
-      <div>
-        <p className="text-2xl">Error 404</p>
-        <p>The page you are looking for dosent exist</p>
+    <div className="pg min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+      <div className="text-center max-w-md">
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">Page not found</h1>
+        <p className="text-slate-600 mb-8">
+          The page you are looking for doesn&apos;t exist or has been moved.
+        </p>
         <button
           type="button"
-          className="btn w-max h-max mt-6 p-3 tap"
+          className="btn-primary max-w-xs"
           onClick={() => navigate("/")}
         >
-          Go Home
+          Go to home
         </button>
       </div>
-      <img
-        src="https://cdn.pixabay.com/photo/2017/03/09/12/31/error-2129569__340.jpg"
-        alt=""
-        width={500}
-        height={250}
-      />
     </div>
   );
 };

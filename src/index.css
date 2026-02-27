@@ -1,26 +1,73 @@
-@import url("https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,500;1,400;1,500&family=Keania+One&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=PT+Sans:ital@0;1&family=Poppins:ital,wght@0,400;0,500;1,400;1,500&family=Ubuntu:ital@0;1&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --color-primary: 30 64 175;
+  --color-primary-hover: 29 78 216;
+  --color-surface: 255 255 255;
+  --color-surface-muted: 248 250 252;
+  --color-border: 226 232 240;
+  --color-text: 15 23 42;
+  --color-text-muted: 100 116 139;
+  --color-error: 185 28 28;
+  --radius: 0.75rem;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 4px 6px -1 rgb(0 0 0 / 0.1), 0 2px 4px -2 rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+@layer base {
+  body {
+    @apply antialiased text-slate-800;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+}
+
 @layer components {
   .pg {
-    @apply min-w-full  min-h-screen  font-open-sans;
+    @apply min-w-full min-h-screen;
   }
 
-  .gr-pg {
-    @apply min-w-full  min-h-screen bg-gradient-to-b from-[#0066FF] to-[#36FFDB] font-open-sans;
+  .btn-primary {
+    @apply w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-200;
+    background-color: rgb(var(--color-primary));
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: rgb(var(--color-primary-hover));
+    box-shadow: var(--shadow);
+  }
+  .btn-primary:disabled {
+    @apply opacity-60 cursor-not-allowed;
   }
 
-  .btn {
-    @apply w-full bg-blue-500 p-4 text-white font-semibold rounded-lg transition-transform transform active:scale-[1.02] hover:scale-100;
+  .btn-secondary {
+    @apply w-full py-3 px-4 rounded-xl font-semibold border-2 transition-all duration-200;
+    border-color: rgb(var(--color-primary));
+    color: rgb(var(--color-primary));
+  }
+  .btn-secondary:hover:not(:disabled) {
+    @apply bg-slate-50;
   }
 
-  .tap {
-    @apply transition-transform transform active:scale-[1.02] hover:scale-100 cursor-pointer;
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-shadow;
   }
 
   .card {
-    @apply rounded-lg shadow-md p-4;
+    @apply rounded-xl bg-white p-5;
+    box-shadow: var(--shadow);
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .tap {
+    @apply cursor-pointer transition-transform active:scale-[0.98];
   }
 }
