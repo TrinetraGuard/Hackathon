@@ -48,9 +48,17 @@ export interface LatLngBoundsInstance {
   extend(point: LatLng): void;
 }
 
+export interface MapOptions {
+  center?: { lat: number; lng: number };
+  zoom?: number;
+  mapTypeControl?: boolean;
+  fullscreenControl?: boolean;
+  zoomControl?: boolean;
+}
+
 export interface GoogleMaps {
   maps: {
-    Map: new (el: HTMLElement, opts?: { center?: { lat: number; lng: number }; zoom?: number }) => MapInstance;
+    Map: new (el: HTMLElement, opts?: MapOptions) => MapInstance;
     LatLng: new (lat: number, lng: number) => LatLng;
     LatLngBounds: new () => LatLngBoundsInstance;
     Marker: new (opts?: { position?: LatLng; map?: unknown; title?: string; label?: string | { text: string; color: string } }) => MapMarkerInstance;

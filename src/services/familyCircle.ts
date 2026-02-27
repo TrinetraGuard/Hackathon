@@ -85,7 +85,7 @@ export async function joinFamilyCircle(codeInput: string, userId: string): Promi
   if (!snap.exists()) throw new Error("Invalid or expired code");
   const data = snap.data() as Omit<FamilyCircle, "id">;
   const memberIds: string[] = data.memberIds || [];
-  if (memberIds.includes(userId)) return { id: code, code, ...data };
+  if (memberIds.includes(userId)) return { ...data, id: code, code };
   await updateDoc(ref, { memberIds: arrayUnion(userId) });
   return {
     id: code,

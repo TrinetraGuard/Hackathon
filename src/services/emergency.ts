@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy } from "firebase/firestore";
+import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy } from "firebase/firestore";
 import { getFirestore } from "@/config/firebase";
 import { COLLECTIONS } from "@/types";
 import type { EmergencyItem } from "@/types";

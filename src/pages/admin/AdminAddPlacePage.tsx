@@ -1,6 +1,6 @@
-import type { Category, Place } from "@/types";
+import type { Category } from "@/types";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { createPlace, getPlaceById, getPlaces, updatePlace } from "@/services/places";
+import { createPlace, getPlaceById, updatePlace } from "@/services/places";
 import { useEffect, useState } from "react";
 
 import { getCategories } from "@/services/categories";
