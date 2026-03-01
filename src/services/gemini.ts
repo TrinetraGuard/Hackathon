@@ -4,13 +4,25 @@
  */
 
 const API_KEY = (import.meta.env.VITE_GEMINI_API_KEY as string)?.trim();
-// Use gemini-1.5-flash for broad compatibility; or gemini-2.0-flash when available
-const MODEL = "gemini-1.5-flash";
-const BASE = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+
+// Try these in order; first success wins. v1beta has newer models, v1 has gemini-pro.
+const MODEL_ATTEMPTS: { url: string }[] = [
+  { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" },
+  { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent" },
+  { url: "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent" },
+];
 
 export interface GeminiMessage {
   role: "user" | "model";
   parts: { text: string }[];
+}
+
+async function doRequest(url: string, body: string): Promise<Response> {
+  return fetch(`${url}?key=${encodeURIComponent(API_KEY!)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+  });
 }
 
 export async function generateContent(
@@ -28,26 +40,35 @@ export async function generateContent(
   });
   contents.push({ role: "user", parts: [{ text: userText }] });
 
-  const res = await fetch(`${BASE}?key=${encodeURIComponent(API_KEY)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents,
-      generationConfig: {
-        maxOutputTokens: 1024,
-        temperature: 0.7,
-      },
-    }),
+  const body = JSON.stringify({
+    contents,
+    generationConfig: {
+      maxOutputTokens: 1024,
+      temperature: 0.7,
+    },
   });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err || `Gemini API error: ${res.status}`);
+
+  let lastError: string | null = null;
+  for (const { url } of MODEL_ATTEMPTS) {
+    const res = await doRequest(url, body);
+    if (res.ok) {
+      const data = (await res.json()) as {
+        candidates?: { content?: { parts?: { text?: string }[] } }[];
+        error?: { message?: string };
+      };
+      if (data.error?.message) {
+        lastError = data.error.message;
+        continue;
+      }
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+      return text.trim();
+    }
+    const errText = await res.text();
+    if (res.status === 404) {
+      lastError = errText;
+      continue;
+    }
+    throw new Error(errText || `Gemini API error: ${res.status}`);
   }
-  const data = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
-    error?: { message?: string };
-  };
-  if (data.error?.message) throw new Error(data.error.message);
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-  return text.trim();
+  throw new Error(lastError || "No Gemini model available. Check VITE_GEMINI_API_KEY and enabled APIs.");
 }
